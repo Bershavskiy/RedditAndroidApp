@@ -4,11 +4,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.redditappandroid.databinding.ActivityMainBinding
 import com.example.redditappandroid.models.Post
+import com.example.redditappandroid.models.ResyclerViewPaginator
 import org.json.JSONObject
 import java.lang.Exception
 
@@ -21,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         init()
-        apiCall(postAdapter,"", 10)
+        apiCall(postAdapter,"", 15)
     }
 
     private fun apiCall(postAdapter: PostAdapter, startId: String, countLoaded: Long) {
@@ -57,6 +59,18 @@ class MainActivity : AppCompatActivity() {
          binding.apply {
              rvPostList.layoutManager = LinearLayoutManager(this@MainActivity)
              rvPostList.adapter = postAdapter
+             rvPostList.addOnScrollListener(object : ResyclerViewPaginator(rvPostList){
+
+                 override fun loadMore(start: String, count: Long) {
+                     apiCall(postAdapter, start, count)
+                 }
+
+                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                     super.onScrolled(recyclerView, dx, dy)
+                     lastItemName = postAdapter.postList.get(postAdapter.postList.size-1).name
+                 }
+
+             })
          }
      }
 }
