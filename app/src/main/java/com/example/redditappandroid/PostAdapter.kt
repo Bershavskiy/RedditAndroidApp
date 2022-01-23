@@ -1,10 +1,6 @@
 package com.example.redditappandroid
 
-
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Log
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,16 +8,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.redditappandroid.databinding.PostItemBinding
 import com.example.redditappandroid.models.Post
-import java.io.IOException
-import java.net.URL
 
 import kotlin.collections.ArrayList
 
 class PostAdapter:RecyclerView.Adapter<PostAdapter.PostHolder>() {
-     lateinit var context: Context
+
     var postList:ArrayList<Post> = ArrayList()
 
-    class PostHolder(item: View): RecyclerView.ViewHolder(item) {
+    class PostHolder(item: View, ): RecyclerView.ViewHolder(item) {
         val binding = PostItemBinding.bind(item)
         fun bind (post: Post) {
             val hours = ((System.currentTimeMillis()/1000) - post.created_utc.toLong())/60/60
@@ -32,10 +26,14 @@ class PostAdapter:RecyclerView.Adapter<PostAdapter.PostHolder>() {
             if(post.thummbnail.substring(0,4)=="http"){
                 binding.imageView2.visibility = View.VISIBLE
                 Glide.with(binding.root).load(post.thummbnail).into(binding.imageView2);
+                binding.postCard.setOnClickListener(View.OnClickListener {
+                    binding.root.context.startActivity(Intent(binding.root.context,DownloadImageActivity::class.java).putExtra("name", post.thummbnail))
+                })
             }else{
                 binding.imageView2.visibility = View.GONE
             }
             binding.imageView2.setImageResource(R.drawable.ic_launcher_background)
+
         }
     }
 
@@ -52,6 +50,7 @@ class PostAdapter:RecyclerView.Adapter<PostAdapter.PostHolder>() {
     override fun getItemCount(): Int {
         return postList.size
     }
+
     fun addPost(post:Post){
         postList.add(post)
         notifyDataSetChanged()

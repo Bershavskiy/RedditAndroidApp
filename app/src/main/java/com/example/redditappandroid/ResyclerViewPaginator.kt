@@ -1,4 +1,4 @@
-package com.example.redditappandroid.models
+package com.example.redditappandroid
 
 import android.widget.AbsListView.OnScrollListener.SCROLL_STATE_IDLE
 import androidx.recyclerview.widget.GridLayoutManager
@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 abstract class ResyclerViewPaginator(recyclerView: RecyclerView): RecyclerView.OnScrollListener() {
 
     private val batchSize: Long = 5
-
      var lastItemName: String = ""
         set(value) {
             field = value
@@ -17,7 +16,7 @@ abstract class ResyclerViewPaginator(recyclerView: RecyclerView): RecyclerView.O
         set(value){
             field = value
         }
-
+    var lastItemNamePrev: String = ""
     private val threshold = 3
     private val layoutManager: RecyclerView.LayoutManager?
 
@@ -40,12 +39,13 @@ abstract class ResyclerViewPaginator(recyclerView: RecyclerView): RecyclerView.O
             }
 
             if(firstVisibleItemPosition + threshold >= totalItemCount){
-                if(isLoaded==false){
-                    isLoaded = true
-                    loadMore(lastItemName, batchSize)
-                }else{
-                    isLoaded=false
-                }
+                   if(isLoaded==false && lastItemNamePrev != lastItemName){
+                       isLoaded = true
+                       lastItemNamePrev = lastItemName
+                       loadMore(lastItemName, batchSize)
+                   }else{
+                       isLoaded=false
+                   }
             }
         }
     }

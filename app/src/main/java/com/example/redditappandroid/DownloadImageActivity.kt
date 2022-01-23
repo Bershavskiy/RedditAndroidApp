@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.DownloadManager
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.Bitmap
@@ -23,20 +22,22 @@ import com.example.redditappandroid.databinding.ActivityDownloadImageBinding
 import kotlinx.coroutines.*
 import java.io.*
 import java.net.URL
-import java.util.*
 
 
 class DownloadImageActivity : AppCompatActivity() {
-
-//    private var imageUrl = "https://i.imgur.com/yc3CbKN.jpg"
+    var image : Bitmap? = null
     lateinit var imageUrl : String
     lateinit var downloadImageActivityBinding: ActivityDownloadImageBinding
+    var toast: Toast? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        downloadImageActivityBinding= ActivityDownloadImageBinding.inflate(layoutInflater)
+        downloadImageActivityBinding = ActivityDownloadImageBinding.inflate(layoutInflater)
         setContentView(downloadImageActivityBinding.root)
 
         imageUrl = intent.getStringExtra("name").toString()
+        getBitmapFromURL(imageUrl)
+
         downloadImageActivityBinding.btnSave
             .setOnClickListener {
                 // After API 23 (Marshmallow) and lower Android 10 you need to ask for permission first before save an image
@@ -45,6 +46,10 @@ class DownloadImageActivity : AppCompatActivity() {
                 } else {
                     downloadImage(imageUrl)
                 }
+            }
+        downloadImageActivityBinding.btnBack
+            .setOnClickListener{
+                finish()
             }
     }
 
@@ -68,7 +73,7 @@ class DownloadImageActivity : AppCompatActivity() {
                 AlertDialog.Builder(this)
                     .setTitle("Permission required")
                     .setMessage("Permission required to save photos from the Web.")
-                    .setPositiveButton("Allow") { dialog, id ->
+                    .setPositiveButton("Allow") { dialog, _ ->
                         ActivityCompat.requestPermissions(
                             this,
                             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
@@ -76,7 +81,7 @@ class DownloadImageActivity : AppCompatActivity() {
                         )
                         finish()
                     }
-                    .setNegativeButton("Deny") { dialog, id -> dialog.cancel() }
+                    .setNegativeButton("Deny") { dialog, _ -> dialog.cancel() }
                     .show()
             } else {
                 // No explanation needed, we can request the permission.
@@ -113,7 +118,6 @@ class DownloadImageActivity : AppCompatActivity() {
                 } else {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
-
                 }
                 return
             }
@@ -129,7 +133,7 @@ class DownloadImageActivity : AppCompatActivity() {
     private var msg: String? = ""
     private var lastMsg = ""
 
-    @SuppressLint("Range")
+    @SuppressLint("Range", "ShowToast")
     private fun downloadImage(url: String) {
         val directory = File(Environment.DIRECTORY_PICTURES)
 
@@ -158,15 +162,21 @@ class DownloadImageActivity : AppCompatActivity() {
             var downloading = true
             while (downloading) {
                 val cursor: Cursor = downloadManager.query(query)
+
                 cursor.moveToFirst()
                 if (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_SUCCESSFUL) {
                     downloading = false
                 }
                 val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
                 msg = statusMessage(url, directory, status)
+
                 if (msg != lastMsg) {
+                    if (toast !== null)
+                        toast?.cancel();
+
                     this.runOnUiThread {
-                        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                        toast = Toast.makeText(this,msg,Toast.LENGTH_SHORT)
+                        toast?.show()
                     }
                     lastMsg = msg ?: ""
                 }
@@ -190,51 +200,22 @@ class DownloadImageActivity : AppCompatActivity() {
         return msg
     }
 
-
     companion object {
         private const val MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1
     }
-}
 
-
-fun URL.toBitmap(): Bitmap?{
-    return try {
-        BitmapFactory.decodeStream(openStream())
-    }catch (e:IOException){
-        null
+    private fun getBitmapFromURL(src: String) {
+        CoroutineScope(Job() + Dispatchers.IO).launch {
+            try {
+                val url = URL(src)
+                val bitMap = BitmapFactory.decodeStream(url.openConnection().getInputStream())
+                image = Bitmap.createBitmap(bitMap)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+            runOnUiThread(Runnable {
+                downloadImageActivityBinding.imView.setImageBitmap(image)
+            })
+        }
     }
 }
-
-fun Bitmap.saveToInternalStorage(context : Context):Uri?{
-    // get the context wrapper instance
-    val wrapper = ContextWrapper(context)
-
-    // initializing a new file
-    // bellow line return a directory in internal storage
-    var file = wrapper.getDir("images", Context.MODE_PRIVATE)
-
-    // create a file to save the image
-    file = File(file, "${UUID.randomUUID()}.jpg")
-
-    return try {
-        // get the file output stream
-        val stream: OutputStream = FileOutputStream(file)
-
-        // compress bitmap
-        compress(Bitmap.CompressFormat.JPEG, 100, stream)
-
-        // flush the stream
-        stream.flush()
-
-        // close stream
-        stream.close()
-
-        // return the saved image uri
-        Uri.parse(file.absolutePath)
-    } catch (e: IOException){ // catch the exception
-        e.printStackTrace()
-        null
-    }
-}
-
-

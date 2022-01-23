@@ -10,7 +10,6 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.redditappandroid.databinding.ActivityMainBinding
 import com.example.redditappandroid.models.Post
-import com.example.redditappandroid.models.ResyclerViewPaginator
 import org.json.JSONObject
 import java.lang.Exception
 
@@ -23,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         init()
-        apiCall(postAdapter,"", 15)
+        apiCall(postAdapter, "", 15)
     }
 
     private fun apiCall(postAdapter: PostAdapter, startId: String, countLoaded: Long) {
@@ -67,9 +66,8 @@ class MainActivity : AppCompatActivity() {
 
                  override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                      super.onScrolled(recyclerView, dx, dy)
-                     lastItemName = postAdapter.postList.get(postAdapter.postList.size-1).name
+                     lastItemName = postAdapter.postList[postAdapter.postList.size-1].name
                  }
-
              })
          }
      }
