@@ -1,1 +1,1 @@
-# RedditAndroidApp
+# RedditAndroidApp - Тестовое задание
