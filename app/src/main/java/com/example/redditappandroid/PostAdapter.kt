@@ -21,7 +21,7 @@ class PostAdapter:RecyclerView.Adapter<PostAdapter.PostHolder>() {
             val hours = ((System.currentTimeMillis()/1000) - post.created_utc.toLong())/60/60
             binding.tvAutor.text =  "Posted by ${post.autor}"
             binding.tvDateAdded.text = "${hours} hours ago"
-            binding.tvNumbersOfComment.text = post.numberOfComments.toString()
+            binding.tvNumbersOfComment.text ="comments: ${post.numberOfComments.toString()}"
 
             if(post.thummbnail.substring(0,4)=="http"){
                 binding.imageView2.visibility = View.VISIBLE
@@ -33,7 +33,6 @@ class PostAdapter:RecyclerView.Adapter<PostAdapter.PostHolder>() {
                 binding.imageView2.visibility = View.GONE
             }
             binding.imageView2.setImageResource(R.drawable.ic_launcher_background)
-
         }
     }
 
