@@ -36,7 +36,7 @@
 
                 <TextView
                     android:id="@+id/tvAutor"
-                    android:layout_width="163dp"
+                    android:layout_width="414dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat"
                     android:text="TextView"
@@ -46,27 +46,28 @@
 
                 <TextView
                     android:id="@+id/tvDateAdded"
-                    android:layout_width="104dp"
+                    android:layout_width="138dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat"
                     android:gravity="center"
                     android:text="TextView"
-                    android:textSize="12sp" />
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvNumbersOfComment"
-                    android:layout_width="104dp"
+                    android:layout_width="140dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat"
                     android:gravity="center"
                     android:text="TextView"
-                    android:textSize="12sp" />
+                    android:textSize="14sp" />
+
             </LinearLayout>
 
             <ImageView
                 android:id="@+id/imageView2"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_height="190dp"
                 android:saveEnabled="false"
                 android:visibility="visible"
                 tools:srcCompat="@tools:sample/backgrounds/scenic" />
