@@ -2,6 +2,7 @@ package com.example.redditappandroid
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -13,16 +14,47 @@ import com.example.redditappandroid.models.Post
 import org.json.JSONObject
 import java.lang.Exception
 
+
 class MainActivity : AppCompatActivity() {
     lateinit var binding : ActivityMainBinding
     private val postAdapter = PostAdapter()
+    var layoutManagerState : Parcelable? = null
+    var restoredDataArray : ArrayList<Post> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         init()
-        apiCall(postAdapter, "", 15)
+        if (savedInstanceState==null){
+            apiCall(postAdapter, "", 10)
+        }
+
+    }
+
+    override fun onSaveInstanceState(state: Bundle) {
+        super.onSaveInstanceState(state)
+        layoutManagerState = binding.rvPostList.getLayoutManager()?.onSaveInstanceState()
+        restoredDataArray = postAdapter.postList
+        state.putParcelable(LIST_STATE_LAYOUT_MANAGER, layoutManagerState)
+        state.putSerializable(LIST_STATE_RECYCLER_DATA, restoredDataArray)
+    }
+
+    override fun onRestoreInstanceState(state: Bundle) {
+        super.onRestoreInstanceState(state)
+        layoutManagerState = state.getParcelable(LIST_STATE_LAYOUT_MANAGER)
+        restoredDataArray = state.getSerializable(LIST_STATE_RECYCLER_DATA) as ArrayList<Post>
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(restoredDataArray.size>0){
+            binding.rvPostList.layoutManager?.onRestoreInstanceState(layoutManagerState)
+            postAdapter.postList.addAll(restoredDataArray)
+        }else{
+            apiCall(postAdapter, "", 10)
+        }
     }
 
     private fun apiCall(postAdapter: PostAdapter, startId: String, countLoaded: Long) {
@@ -61,6 +93,7 @@ class MainActivity : AppCompatActivity() {
              rvPostList.addOnScrollListener(object : ResyclerViewPaginator(rvPostList){
 
                  override fun loadMore(start: String, count: Long) {
+                     lastItemName = postAdapter.postList[postAdapter.postList.size-1].name
                      apiCall(postAdapter, start, count)
                  }
 
@@ -71,4 +104,8 @@ class MainActivity : AppCompatActivity() {
              })
          }
      }
+    companion object{
+        const val LIST_STATE_LAYOUT_MANAGER = "recycler_array_data"
+        const val LIST_STATE_RECYCLER_DATA = "recycler_state_layout_manager"
+    }
 }
